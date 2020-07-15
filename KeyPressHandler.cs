@@ -123,7 +123,14 @@ namespace TextEditor
             int zeroIndexedCurrentColumn = editor.EditorBuffer.CurrentColumnIndex;
 
             int zeroIndexedPositionToDelete = zeroIndexedCurrentColumn - 1;
-            if (zeroIndexedPositionToDelete < 0) return;
+            if (zeroIndexedPositionToDelete < 0) {
+                if (zeroIndexedCurrentLine > 0) {
+                    HandleBackpaceAcrossLines();
+                    return;
+                } else {
+                    return;
+                }
+            }
 
             // Get string after cursor
             string remainingSubstring = editor.GetTextBuffer().GetLine(zeroIndexedCurrentLine).Length >= zeroIndexedCurrentColumn ?
@@ -146,6 +153,22 @@ namespace TextEditor
             // Advance curson position back by one
             editor.EditorBuffer.MoveCursorLeft();
         }
+
+        protected void HandleBackpaceAcrossLines()
+        {
+            // Try to separate the business logic (underlying text manipulation) from the presentation
+            
+            // Get the line
+            int zeroIndexedCurrentLine = editor.EditorBuffer.CurrentLineIndex;
+
+            // Tell the text buffer to remove that line but append it's text to the previous line
+            string textFromCurrentLine = editor.TextBuffer.GetLine(zeroIndexedCurrentLine);
+            editor.TextBuffer.RemoveLine(zeroIndexedCurrentLine);
+            editor.TextBuffer.AppendToLine(zeroIndexedCurrentLine - 1, textFromCurrentLine);
+
+            // Update the presentation. Ah!
+        }
+
         protected void HandleEnter()
         {
             // zero-indexed

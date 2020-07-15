@@ -14,6 +14,13 @@ namespace TextEditor
             buffer.Add(new StringBuilder());
         }
 
+        public void AppendToLine(int lineIndex, string text) {
+            if (lineIndex >= buffer.Count) return;
+            StringBuilder line = buffer[lineIndex];
+            line.Append(text);
+            notifySubscribers();
+        }
+
         public void Insert(int lineIndex, int columnIndex, char character)
         {
             if (lineIndex >= buffer.Count) return;
@@ -40,7 +47,13 @@ namespace TextEditor
             } else {
                 buffer.Insert(lineIndex + 1, new StringBuilder(initialText));
             }
-            
+            notifySubscribers();
+        }
+
+        public void RemoveLine(int lineIndex)
+        {
+            buffer.RemoveAt(lineIndex);
+            notifySubscribers();
         }
 
         public string GetLine(int lineIndex)
