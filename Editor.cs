@@ -2,11 +2,14 @@ using System;
 
 namespace TextEditor
 {
-    class Editor {
+    class Editor
+    {
         protected StatusBuffer titleBar;
         protected StatusBuffer statusBar;
         protected EditorBuffer editorBuffer;
+        public EditorBuffer EditorBuffer { get { return editorBuffer; } }
         protected TextBuffer textBuffer;
+        public TextBuffer TextBuffer { get { return textBuffer; } }
 
         public Editor()
         {
@@ -17,7 +20,7 @@ namespace TextEditor
 
             titleBar = new StatusBuffer(1, Console.BufferWidth);
             titleBar
-                .AtPosition(new CursorPosition(0,0))
+                .AtPosition(new CursorPosition(0, 0))
                 .WithContent("Welcome to Text Editor")
                 .WithColorConfiguration(systemColorConfiguration)
                 .paint();
@@ -38,7 +41,7 @@ namespace TextEditor
             textBuffer = new TextBuffer();
 
             textBuffer.registerSubscriber(statusBar);
-            
+
         }
 
         protected ColorConfiguration GetEditorColorConfiguration()
@@ -49,7 +52,7 @@ namespace TextEditor
             );
         }
 
-        protected ColorConfiguration GetSystemColorConfiguration() 
+        protected ColorConfiguration GetSystemColorConfiguration()
         {
             return new ColorConfiguration(
                 ConsoleColor.DarkBlue,
@@ -63,7 +66,7 @@ namespace TextEditor
             Console.WriteLine(textBuffer.ToString());
         }
 
-        public EditorBuffer GetEditorBuffer() 
+        public EditorBuffer GetEditorBuffer()
         {
             return editorBuffer;
         }

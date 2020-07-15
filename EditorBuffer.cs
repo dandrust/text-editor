@@ -31,8 +31,8 @@ namespace TextEditor
 
         public void Start()
         {
-            currentCursorRow = rootPosition.GetRow();
-            currentCursorColumn = rootPosition.GetColumn();
+            currentCursorRow = rootPosition.Row;
+            currentCursorColumn = rootPosition.Column;
 
             UpdateCursor();
         }
@@ -49,7 +49,8 @@ namespace TextEditor
 
         public void MoveCursorLeft()
         {
-            if (getRelativeColumn() > 0) {
+            if (relativeColumn > 0)
+            {
                 currentCursorColumn--;
                 UpdateCursor();
             }
@@ -57,7 +58,8 @@ namespace TextEditor
 
         public void MoveCursorRight()
         {
-            if (getRelativeColumn() < this.width) {
+            if (relativeColumn < this.width)
+            {
                 currentCursorColumn++;
                 UpdateCursor();
             }
@@ -65,7 +67,8 @@ namespace TextEditor
 
         public void MoveCursorUp()
         {
-            if (getRelativeRow() > 0) {
+            if (relativeRow > 0)
+            {
                 currentCursorRow--;
                 UpdateCursor();
             }
@@ -73,7 +76,8 @@ namespace TextEditor
 
         public void MoveCursorDown()
         {
-            if (getRelativeRow() < this.height - 1) {
+            if (relativeRow < this.height - 1)
+            {
                 currentCursorRow++;
                 UpdateCursor();
             }
@@ -87,28 +91,16 @@ namespace TextEditor
 
         public void MoveCursorToOriginColumn()
         {
-            currentCursorColumn = rootPosition.GetColumn();
+            currentCursorColumn = rootPosition.Column;
             UpdateCursor();
         }
 
-        protected int getRelativeRow()
-        {
-            return currentCursorRow - rootPosition.GetRow();
-        }
+        protected int relativeRow { get { return currentCursorRow - rootPosition.Row; } }
 
-        protected int getRelativeColumn()
-        {
-            return currentCursorColumn - rootPosition.GetColumn();
-        }
+        protected int relativeColumn { get { return currentCursorColumn - rootPosition.Column; } }
 
-        public int GetCurrentLineIndex()
-        {
-            return getRelativeRow();
-        }
+        public int CurrentLineIndex { get { return relativeRow; } }
 
-        public int GetCurrentColumnIndex()
-        {
-            return getRelativeColumn();
-        }
+        public int CurrentColumnIndex { get { return relativeColumn; } }
     }
 }

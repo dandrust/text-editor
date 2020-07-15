@@ -96,19 +96,19 @@ namespace TextEditor
         {
             if (keyPress.Key == ConsoleKey.LeftArrow)
             {
-                editor.GetEditorBuffer().MoveCursorLeft();
+                editor.EditorBuffer.MoveCursorLeft();
             }
             else if (keyPress.Key == ConsoleKey.RightArrow)
             {
-                editor.GetEditorBuffer().MoveCursorRight();
+                editor.EditorBuffer.MoveCursorRight();
             }
             else if (keyPress.Key == ConsoleKey.UpArrow)
             {
-                editor.GetEditorBuffer().MoveCursorUp();
+                editor.EditorBuffer.MoveCursorUp();
             }
             else if (keyPress.Key == ConsoleKey.DownArrow)
             {
-                editor.GetEditorBuffer().MoveCursorDown();
+                editor.EditorBuffer.MoveCursorDown();
             }
         }
         protected void HandleBackpace()
@@ -117,10 +117,10 @@ namespace TextEditor
             CursorPosition position = new CursorPosition(Console.CursorLeft, Console.CursorTop);
 
             // zero-indexed
-            int zeroIndexedCurrentLine = editor.GetEditorBuffer().GetCurrentLineIndex();
+            int zeroIndexedCurrentLine = editor.EditorBuffer.CurrentLineIndex;
 
             // zero-indexed
-            int zeroIndexedCurrentColumn = editor.GetEditorBuffer().GetCurrentColumnIndex();
+            int zeroIndexedCurrentColumn = editor.EditorBuffer.CurrentColumnIndex;
 
             int zeroIndexedPositionToDelete = zeroIndexedCurrentColumn - 1;
             if (zeroIndexedPositionToDelete < 0) return;
@@ -134,7 +134,7 @@ namespace TextEditor
             editor.GetTextBuffer().Remove(zeroIndexedCurrentLine, zeroIndexedPositionToDelete, 1);
 
             // Move the curor left one position to write over to-be-deleted character
-            Console.SetCursorPosition(position.GetColumn() - 1, position.GetRow());
+            Console.SetCursorPosition(position.Column - 1, position.Row);
 
             // Write remaining substring + a space to cover removed character
             Console.Write(remainingSubstring);
@@ -144,15 +144,15 @@ namespace TextEditor
             position.Restore();
 
             // Advance curson position back by one
-            editor.GetEditorBuffer().MoveCursorLeft();
+            editor.EditorBuffer.MoveCursorLeft();
         }
         protected void HandleEnter()
         {
             // zero-indexed
-            int zeroIndexedCurrentLine = editor.GetEditorBuffer().GetCurrentLineIndex();
+            int zeroIndexedCurrentLine = editor.EditorBuffer.CurrentLineIndex;
 
             // zero-indexed
-            int zeroIndexedCurrentColumn = editor.GetEditorBuffer().GetCurrentColumnIndex();
+            int zeroIndexedCurrentColumn = editor.EditorBuffer.CurrentColumnIndex;
 
             // Get string after cursor
             string remainingSubstring = editor.GetTextBuffer().GetLine(zeroIndexedCurrentLine).Length > 0 ?
@@ -166,7 +166,7 @@ namespace TextEditor
             Console.Write("".PadRight(remainingSubstring.Length));
 
             // Add a new line
-            editor.GetEditorBuffer().NewLine();
+            editor.EditorBuffer.NewLine();
 
             // Remember the column position of the cursor
             CursorPosition newPosition = new CursorPosition(Console.CursorLeft, Console.CursorTop);
@@ -183,10 +183,10 @@ namespace TextEditor
             CursorPosition position = new CursorPosition(Console.CursorLeft, Console.CursorTop);
 
             // zero-indexed
-            int zeroIndexedCurrentLine = editor.GetEditorBuffer().GetCurrentLineIndex();
+            int zeroIndexedCurrentLine = editor.EditorBuffer.CurrentLineIndex;
 
             // zero-indexed
-            int zeroIndexedCurrentColumn = editor.GetEditorBuffer().GetCurrentColumnIndex();
+            int zeroIndexedCurrentColumn = editor.EditorBuffer.CurrentColumnIndex;
 
             // Get string after cursor
             string remainingSubstring = editor.GetTextBuffer().GetLine(zeroIndexedCurrentLine).Length > 0 ?
@@ -204,7 +204,7 @@ namespace TextEditor
             position.Restore();
 
             // Advance curson position by one
-            editor.GetEditorBuffer().AdvanceCursor();
+            editor.EditorBuffer.AdvanceCursor();
         }
     }
 }
