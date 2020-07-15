@@ -42,6 +42,11 @@ namespace TextEditor
             Console.SetCursorPosition(currentCursorColumn, currentCursorRow);
         }
 
+        public void AdvanceCursor()
+        {
+            MoveCursorRight();
+        }
+
         public void MoveCursorLeft()
         {
             if (getRelativeColumn() > 0) {
@@ -72,6 +77,18 @@ namespace TextEditor
                 currentCursorRow++;
                 UpdateCursor();
             }
+        }
+
+        public void NewLine()
+        {
+            MoveCursorDown();
+            MoveCursorToOriginColumn();
+        }
+
+        public void MoveCursorToOriginColumn()
+        {
+            currentCursorColumn = rootPosition.GetColumn();
+            UpdateCursor();
         }
 
         protected int getRelativeRow()

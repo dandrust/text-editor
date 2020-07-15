@@ -1,6 +1,9 @@
 Bugs:
 =====
-* Insert adds characters to the beginning of the buffer, not the end
-* Code in KeyPressHandler.HandleInsert is kind of messy
-* Code from Program.HandleEnter and Program.HandleBackspace needs to be moved to KeyPressHandler
-* Pressing enter should start a new line
+x Insert adds characters to the beginning of the buffer, not the end
+- Code in KeyPressHandler.HandleInsert, .HandleBackspace, .HandleEnter is kind of messy
+x Code from Program.HandleEnter and Program.HandleBackspace needs to be moved to KeyPressHandler
+x Pressing enter should start a new line
+
+
+

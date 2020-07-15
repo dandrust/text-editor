@@ -16,10 +16,12 @@ namespace TextEditor
 
         public void Insert(int lineIndex, int columnIndex, char character)
         {
-            if (lineIndex > buffer.Count) return;
+            if (lineIndex >= buffer.Count) return;
             StringBuilder line = buffer[lineIndex];
 
             if (columnIndex > line.Length) return;
+
+            // line.Insert(columnIndex, Convert.ToString(columnIndex));
             line.Insert(columnIndex, character);
 
             notifySubscribers();
@@ -31,19 +33,19 @@ namespace TextEditor
             notifySubscribers();
         }
 
-        public void AddNewLine(int lineIndex)
+        public void InsertLine(int lineIndex, string initialText)
         {
-            if (lineIndex > buffer.Count - 1) {
+            if (lineIndex >= buffer.Count) {
                 buffer.Add(new StringBuilder());
             } else {
-                buffer.Insert(lineIndex + 1, new StringBuilder());
+                buffer.Insert(lineIndex + 1, new StringBuilder(initialText));
             }
             
         }
 
         public string GetLine(int lineIndex)
         {
-            if (lineIndex > buffer.Count - 1) {
+            if (lineIndex < buffer.Count) {
                 return buffer[lineIndex].ToString();
             } else {
                 return "";
