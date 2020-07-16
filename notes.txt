@@ -1,23 +1,18 @@
 Bugs:
 =====
-x Insert adds characters to the beginning of the buffer, not the end
-- Code in KeyPressHandler.HandleInsert, .HandleBackspace, .HandleEnter is kind of messy
-x Code from Program.HandleEnter and Program.HandleBackspace needs to be moved to KeyPressHandler
-x Pressing enter should start a new line
-x Backspace position 0 of lineIndex > 0 appends line to end of previous line
-x Tell editor buffer where to move cursor after multi-line backspace
-x Restrict mouse movement to say in buffered text
+- Put Edit mode keyhandlers in EditController
+- Work out a way to make commandBuffer act as a text model and present through the status bar
 
 
 Long term:
 ==========
-- Scrolling
-- Word wrapping
+- Scrolling (Make the editor buffer lines reference a section of the underlying text buffer and update appropriately)
+- Word wrapping (Decouple the idea of a text line from a single editor buffer console line, adjust scrolling window accordingly)
 - Highlighting
 - Copy/paste
-- Keyboard shortcuts
 - Tab
-- Numbers pane
+- Numbers pane (Line numbers!)
 - Status on the bottom
+- Save (Includes knowing when the editor is dirty and giving exit confirmation for unsaved buffer)
 
 

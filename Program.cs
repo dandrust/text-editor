@@ -8,7 +8,7 @@ namespace TextEditor
         {
             Console.TreatControlCAsInput = true;
             Editor editor = new Editor();
-            KeyPressHandler keyPressHandler = new KeyPressHandler(editor);
+            KeyPressHandler keyPressHandler = new KeyPressHandler(editor, new CommandController(editor));
 
             keyPressHandler.listen();
             editor.Exit();

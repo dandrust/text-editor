@@ -5,9 +5,11 @@ namespace TextEditor
     class KeyPressHandler
     {
         protected Editor editor;
-        public KeyPressHandler(Editor editor)
+        protected CommandController commandController;
+        public KeyPressHandler(Editor editor, CommandController commandController)
         {
             this.editor = editor;
+            this.commandController = commandController;
         }
 
         public void listen()
@@ -18,7 +20,12 @@ namespace TextEditor
 
         protected bool HandleKeyPress(ConsoleKeyInfo keyPress)
         {
-            if (EscapeKey(keyPress)) return false;
+            if (editor.InCommandMode()) {
+                return commandController.Process(keyPress);
+            }
+            if (EscapeKey(keyPress)) {
+                editor.ToggleMode();
+            }
 
             if (ModifiedByAlt(keyPress))
             {
@@ -135,7 +142,7 @@ namespace TextEditor
                 }
             } else {
                 // Remove the character from the underlying text buffer
-                editor.GetTextBuffer().Remove(zeroIndexedCurrentLine, zeroIndexedPositionToDelete, 1);
+                editor.TextBuffer.Remove(zeroIndexedCurrentLine, zeroIndexedPositionToDelete, 1);
 
                 // Reset cursor position
                 position.Restore();
@@ -151,12 +158,12 @@ namespace TextEditor
             int zeroIndexedCurrentColumn = editor.EditorBuffer.CurrentColumnIndex;
 
             // Get string after cursor
-            string remainingSubstring = editor.GetTextBuffer().GetLine(zeroIndexedCurrentLine).Length > 0 ?
-                remainingSubstring = editor.GetTextBuffer().GetLine(zeroIndexedCurrentLine).Substring(zeroIndexedCurrentColumn) :
+            string remainingSubstring = editor.TextBuffer.GetLine(zeroIndexedCurrentLine).Length > 0 ?
+                remainingSubstring = editor.TextBuffer.GetLine(zeroIndexedCurrentLine).Substring(zeroIndexedCurrentColumn) :
                 "";
 
-            editor.GetTextBuffer().Remove(zeroIndexedCurrentLine, zeroIndexedCurrentColumn, editor.GetTextBuffer().GetLine(zeroIndexedCurrentLine).Length - zeroIndexedCurrentColumn);
-            editor.GetTextBuffer().InsertLine(zeroIndexedCurrentLine, remainingSubstring);
+            editor.TextBuffer.Remove(zeroIndexedCurrentLine, zeroIndexedCurrentColumn, editor.TextBuffer.GetLine(zeroIndexedCurrentLine).Length - zeroIndexedCurrentColumn);
+            editor.TextBuffer.InsertLine(zeroIndexedCurrentLine, remainingSubstring);
 
             // Clear out the text after the cursor of the current line
             // Console.Write("".PadRight(remainingSubstring.Length));
@@ -183,7 +190,7 @@ namespace TextEditor
             int zeroIndexedCurrentColumn = editor.EditorBuffer.CurrentColumnIndex;
 
             // Insert character
-            editor.GetTextBuffer().Insert(zeroIndexedCurrentLine, zeroIndexedCurrentColumn, character);
+            editor.TextBuffer.Insert(zeroIndexedCurrentLine, zeroIndexedCurrentColumn, character);
 
             // Restore the column position of the curor before rewriting the line
             position.Restore();

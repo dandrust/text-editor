@@ -10,6 +10,14 @@ namespace TextEditor
         public EditorBuffer EditorBuffer { get { return editorBuffer; } }
         protected TextBuffer textBuffer;
         public TextBuffer TextBuffer { get { return textBuffer; } }
+        public EditorMode Mode { get; set; } = EditorMode.Edit;
+        public enum EditorMode
+        {
+            Command,
+            Edit,
+            Highlight
+        }
+        protected CommandBuffer commandBuffer = null;
 
         public Editor()
         {
@@ -42,9 +50,9 @@ namespace TextEditor
                 .WithModel(textBuffer)
                 .Start();
 
-            
 
-            
+
+
 
         }
 
@@ -70,14 +78,92 @@ namespace TextEditor
             Console.WriteLine(textBuffer.ToString());
         }
 
-        public EditorBuffer GetEditorBuffer()
+        public void ToggleMode()
         {
-            return editorBuffer;
+            if (InEditMode())
+            {
+                EnterCommandMode();
+            }
+            else
+            {
+                LeaveCommandMode();
+            }
         }
 
-        public TextBuffer GetTextBuffer()
+        public void EnterCommandMode()
         {
-            return textBuffer;
+            Mode = EditorMode.Command;
+            commandBuffer = new CommandBuffer;
+        }
+
+        public void LeaveCommandMode()
+        {
+            Mode = EditorMode.Edit;
+            commandBuffer = null;
+        }
+
+        public void EnterHighlightMode()
+        {
+            Mode = EditorMode.Highlight;
+        }
+
+        public bool InCommandMode()
+        {
+            return Mode == EditorMode.Command;
+        }
+
+        public bool InEditMode()
+        {
+            return Mode == EditorMode.Edit;
+        }
+
+        public bool InHighlightMode()
+        {
+            return Mode = EditorMode.Highlight;
+        }
+
+        public void DispatchCommand() {
+            string command = commandBuffer.ToString();
+
+            switch (command)
+            {
+                case "quit":
+                case "q":
+                    Exit();
+                    break;
+                case "undo":
+                case "u":
+                case "z":
+                    //
+                    break;
+                case "redo":
+                case "r":
+                    //
+                    break;
+                case "save":
+                case "s":
+                    //
+                    break;
+                case "copy":
+                case "c":
+                    //
+                    break;
+                case "paste":
+                case "p":
+                    //
+                    break;
+                case "cut":
+                case "x":
+                    //
+                    break;
+                case "highlight":
+                case "h":
+                    EnterHighlightMode();
+                    break;
+                default:
+                    // Send a timeoutable message to status bar "Invalid Command"
+                    break;
+            }
         }
     }
 }
