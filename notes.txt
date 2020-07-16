@@ -4,8 +4,10 @@ x Insert adds characters to the beginning of the buffer, not the end
 - Code in KeyPressHandler.HandleInsert, .HandleBackspace, .HandleEnter is kind of messy
 x Code from Program.HandleEnter and Program.HandleBackspace needs to be moved to KeyPressHandler
 x Pressing enter should start a new line
-- Restrict mouse movement to say in buffered text
-- Backspace position 0 of lineIndex > 0 appends line to end of previous line
+x Backspace position 0 of lineIndex > 0 appends line to end of previous line
+x Tell editor buffer where to move cursor after multi-line backspace
+x Restrict mouse movement to say in buffered text
+- Make editor aware of current line, implement line highlighting
 
 
 

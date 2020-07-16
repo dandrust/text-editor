@@ -7,18 +7,22 @@ namespace TextEditor
     class TextBuffer
     {
         protected List<StringBuilder> buffer = new List<StringBuilder>();
-        protected List<StatusBuffer> subscribers = new List<StatusBuffer>();
+        public List<StringBuilder> Buffer { get { return buffer; } }
+        protected List<IUpdatable> subscribers = new List<IUpdatable>();
+
+        protected Dictionary<int, List<IUpdatable>> lineSubscriptions = new Dictionary<int, List<IUpdatable>>();
 
         public TextBuffer()
         {
             buffer.Add(new StringBuilder());
         }
 
-        public void AppendToLine(int lineIndex, string text) {
+        public void AppendToLine(int lineIndex, string text)
+        {
             if (lineIndex >= buffer.Count) return;
             StringBuilder line = buffer[lineIndex];
             line.Append(text);
-            notifySubscribers();
+            notifySubscribers(lineIndex);
         }
 
         public void Insert(int lineIndex, int columnIndex, char character)
@@ -31,36 +35,45 @@ namespace TextEditor
             // line.Insert(columnIndex, Convert.ToString(columnIndex));
             line.Insert(columnIndex, character);
 
-            notifySubscribers();
+            notifySubscribers(lineIndex);
         }
 
         public void Remove(int lineIndex, int columnIndex, int length)
         {
             buffer[lineIndex].Remove(columnIndex, length);
-            notifySubscribers();
+            notifySubscribers(lineIndex);
         }
 
         public void InsertLine(int lineIndex, string initialText)
         {
-            if (lineIndex >= buffer.Count) {
+            if (lineIndex >= buffer.Count)
+            {
                 buffer.Add(new StringBuilder());
-            } else {
+            }
+            else
+            {
                 buffer.Insert(lineIndex + 1, new StringBuilder(initialText));
             }
-            notifySubscribers();
+            notifySubscribers(lineIndex);
         }
 
         public void RemoveLine(int lineIndex)
         {
             buffer.RemoveAt(lineIndex);
-            notifySubscribers();
+
+            do {
+                notifySubscribers(lineIndex++);
+            } while(lineIndex <= buffer.Count);
         }
 
         public string GetLine(int lineIndex)
         {
-            if (lineIndex < buffer.Count) {
+            if (lineIndex < buffer.Count)
+            {
                 return buffer[lineIndex].ToString();
-            } else {
+            }
+            else
+            {
                 return "";
             }
 
@@ -69,7 +82,7 @@ namespace TextEditor
         public override string ToString()
         {
             List<string> listOfStrings = buffer.ConvertAll(
-                new Converter<StringBuilder, string>((StringBuilder builder) => builder.ToString() )
+                new Converter<StringBuilder, string>((StringBuilder builder) => builder.ToString())
             );
 
             string[] arrayOfStrings = listOfStrings.ToArray();
@@ -77,17 +90,42 @@ namespace TextEditor
             return String.Join("-", arrayOfStrings);
         }
 
-        public void registerSubscriber(StatusBuffer subscriber)
+        public void registerSubscriber(IUpdatable subscriber)
         {
             this.subscribers.Add(subscriber);
         }
 
-        protected void notifySubscribers()
+        public void SubscribeToLine(int lineIndex, IUpdatable subscriber)
         {
-            this.subscribers.ForEach(delegate (StatusBuffer subscriber) 
+            List<IUpdatable> subscriberList = null;
+
+            if (lineSubscriptions.TryGetValue(lineIndex, out subscriberList))
             {
-                subscriber.update(this.ToString());
+                subscriberList.Add(subscriber);
+            }
+            else
+            {
+                subscriberList = new List<IUpdatable>();
+                subscriberList.Add(subscriber);
+                lineSubscriptions.Add(lineIndex, subscriberList);
+            }
+        }
+
+        protected void notifySubscribers(int lineIndex)
+        {
+            subscribers.ForEach(delegate (IUpdatable subscriber)
+            {
+                subscriber.Update(this.ToString());
             });
+
+            List<IUpdatable> subscriberList = null;
+            if (lineSubscriptions.TryGetValue(lineIndex, out subscriberList))
+            {
+                subscriberList.ForEach(delegate (IUpdatable subscriber)
+                {
+                    subscriber.Update(GetLine(lineIndex));
+                });
+            }
         }
 
     }

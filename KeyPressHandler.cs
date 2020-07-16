@@ -116,65 +116,39 @@ namespace TextEditor
             // Remember the column position of the cursor
             CursorPosition position = new CursorPosition(Console.CursorLeft, Console.CursorTop);
 
-            // zero-indexed
+            // Get editor buffer-aware line and column indicies
             int zeroIndexedCurrentLine = editor.EditorBuffer.CurrentLineIndex;
-
-            // zero-indexed
             int zeroIndexedCurrentColumn = editor.EditorBuffer.CurrentColumnIndex;
-
             int zeroIndexedPositionToDelete = zeroIndexedCurrentColumn - 1;
+
             if (zeroIndexedPositionToDelete < 0) {
                 if (zeroIndexedCurrentLine > 0) {
-                    HandleBackpaceAcrossLines();
-                    return;
+                    int textLengthFromPreviouLine = editor.TextBuffer.GetLine(zeroIndexedCurrentLine - 1).Length;
+                    string textFromCurrentLine = editor.TextBuffer.GetLine(zeroIndexedCurrentLine);
+                    editor.TextBuffer.RemoveLine(zeroIndexedCurrentLine);
+                    editor.TextBuffer.AppendToLine(zeroIndexedCurrentLine - 1, textFromCurrentLine);
+
+                    // Need to tell editor.EditorBuffer where cursor should be
+                    editor.EditorBuffer.MoveCursorTo(textLengthFromPreviouLine, zeroIndexedCurrentLine);
                 } else {
                     return;
                 }
+            } else {
+                // Remove the character from the underlying text buffer
+                editor.GetTextBuffer().Remove(zeroIndexedCurrentLine, zeroIndexedPositionToDelete, 1);
+
+                // Reset cursor position
+                position.Restore();
+
+                // Advance curson position back by one
+                editor.EditorBuffer.MoveCursorLeft();
             }
-
-            // Get string after cursor
-            string remainingSubstring = editor.GetTextBuffer().GetLine(zeroIndexedCurrentLine).Length >= zeroIndexedCurrentColumn ?
-                remainingSubstring = editor.GetTextBuffer().GetLine(zeroIndexedCurrentLine).Substring(zeroIndexedCurrentColumn) :
-                "";
-
-            // Remove the character from the underlying text buffer
-            editor.GetTextBuffer().Remove(zeroIndexedCurrentLine, zeroIndexedPositionToDelete, 1);
-
-            // Move the curor left one position to write over to-be-deleted character
-            Console.SetCursorPosition(position.Column - 1, position.Row);
-
-            // Write remaining substring + a space to cover removed character
-            Console.Write(remainingSubstring);
-            Console.Write(" ");
-
-            // Reset cursor position
-            position.Restore();
-
-            // Advance curson position back by one
-            editor.EditorBuffer.MoveCursorLeft();
-        }
-
-        protected void HandleBackpaceAcrossLines()
-        {
-            // Try to separate the business logic (underlying text manipulation) from the presentation
-            
-            // Get the line
-            int zeroIndexedCurrentLine = editor.EditorBuffer.CurrentLineIndex;
-
-            // Tell the text buffer to remove that line but append it's text to the previous line
-            string textFromCurrentLine = editor.TextBuffer.GetLine(zeroIndexedCurrentLine);
-            editor.TextBuffer.RemoveLine(zeroIndexedCurrentLine);
-            editor.TextBuffer.AppendToLine(zeroIndexedCurrentLine - 1, textFromCurrentLine);
-
-            // Update the presentation. Ah!
         }
 
         protected void HandleEnter()
         {
-            // zero-indexed
+            // Get editor buffer-aware line and column indicies
             int zeroIndexedCurrentLine = editor.EditorBuffer.CurrentLineIndex;
-
-            // zero-indexed
             int zeroIndexedCurrentColumn = editor.EditorBuffer.CurrentColumnIndex;
 
             // Get string after cursor
@@ -186,7 +160,7 @@ namespace TextEditor
             editor.GetTextBuffer().InsertLine(zeroIndexedCurrentLine, remainingSubstring);
 
             // Clear out the text after the cursor of the current line
-            Console.Write("".PadRight(remainingSubstring.Length));
+            // Console.Write("".PadRight(remainingSubstring.Length));
 
             // Add a new line
             editor.EditorBuffer.NewLine();
@@ -205,28 +179,17 @@ namespace TextEditor
             // Remember the column position of the cursor
             CursorPosition position = new CursorPosition(Console.CursorLeft, Console.CursorTop);
 
-            // zero-indexed
+            // Get editor buffer-aware line and column indicies
             int zeroIndexedCurrentLine = editor.EditorBuffer.CurrentLineIndex;
-
-            // zero-indexed
             int zeroIndexedCurrentColumn = editor.EditorBuffer.CurrentColumnIndex;
-
-            // Get string after cursor
-            string remainingSubstring = editor.GetTextBuffer().GetLine(zeroIndexedCurrentLine).Length > 0 ?
-                remainingSubstring = editor.GetTextBuffer().GetLine(zeroIndexedCurrentLine).Substring(zeroIndexedCurrentColumn) :
-                "";
 
             // Insert character
             editor.GetTextBuffer().Insert(zeroIndexedCurrentLine, zeroIndexedCurrentColumn, character);
 
-            // Append new character + remaining substring after insert to display
-            Console.Write(character);
-            Console.Write(remainingSubstring);
-
             // Restore the column position of the curor before rewriting the line
             position.Restore();
 
-            // Advance curson position by one
+            // Advance cursor position by one
             editor.EditorBuffer.AdvanceCursor();
         }
     }

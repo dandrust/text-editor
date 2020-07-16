@@ -2,7 +2,7 @@ using System;
 
 namespace TextEditor
 {
-    class StatusBuffer
+    class StatusBuffer : IUpdatable
     {
         protected int height;
         protected int width;
@@ -64,7 +64,7 @@ namespace TextEditor
             paint();
         }
 
-        public void update(string text)
+        public void Update(string text)
         {
             UpdateContent(text);
         }

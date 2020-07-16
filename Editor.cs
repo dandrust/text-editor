@@ -32,15 +32,19 @@ namespace TextEditor
                 .WithColorConfiguration(systemColorConfiguration)
                 .paint();
 
+            textBuffer = new TextBuffer();
+            textBuffer.registerSubscriber(statusBar);
+
             editorBuffer = new EditorBuffer(Console.BufferHeight - 2, Console.BufferWidth);
             editorBuffer
                 .AtPosition(new CursorPosition(0, 1))
                 .WithColorConfiguration(editorColorConfiguration)
+                .WithModel(textBuffer)
                 .Start();
 
-            textBuffer = new TextBuffer();
+            
 
-            textBuffer.registerSubscriber(statusBar);
+            
 
         }
 

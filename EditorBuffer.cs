@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace TextEditor
 {
@@ -9,7 +11,13 @@ namespace TextEditor
         protected CursorPosition rootPosition;
         protected int currentCursorRow;
         protected int currentCursorColumn;
+        protected int relativeRow { get { return currentCursorRow - rootPosition.Row; } }
+        protected int relativeColumn { get { return currentCursorColumn - rootPosition.Column; } }
         protected ColorConfiguration colorConfiguration;
+        protected List<EditorBufferLine> bufferLines = new List<EditorBufferLine>();
+        public int CurrentLineIndex { get { return relativeRow; } }
+        public int CurrentColumnIndex { get { return relativeColumn; } }
+        protected TextBuffer textModel;
 
         public EditorBuffer(int height, int width)
         {
@@ -26,6 +34,41 @@ namespace TextEditor
         public EditorBuffer WithColorConfiguration(ColorConfiguration configuration)
         {
             colorConfiguration = configuration;
+            return this;
+        }
+
+        public EditorBuffer WithModel(TextBuffer textBuffer)
+        {
+            textModel = textBuffer;
+
+            // Initialize a buffer line for each available line in the editor
+            for (int i = 0; i < height; i++)
+            {
+
+                // Is there a real line for this editor line in the underlying model?
+                // If so, grab the text.  Otherwise, return an empty string
+                string text = textBuffer.Buffer.Count > i ?
+                    textBuffer.GetLine(i) :
+                    "";
+
+                EditorBufferLine bufferLine = new EditorBufferLine()
+                    .WithText(text)
+                    .OfLength(width)
+                    .AtPosition(new CursorPosition(0, i + 1));
+
+                // Add the new buffer line to the line subscription list to get updates
+                // The observer pattern!
+                textBuffer.SubscribeToLine(i, bufferLine);
+
+                bufferLines.Add(bufferLine);
+            }
+
+            // Paint the lines we've just created
+            foreach (EditorBufferLine line in bufferLines)
+            {
+                line.Paint();
+            }
+
             return this;
         }
 
@@ -58,10 +101,15 @@ namespace TextEditor
 
         public void MoveCursorRight()
         {
-            if (relativeColumn < this.width)
+            // Only allow the cursor to move to the last editable position
+            if (relativeColumn < textModel.GetLine(relativeRow).Length)
             {
-                currentCursorColumn++;
-                UpdateCursor();
+                if (relativeColumn < this.width)
+                {
+                    currentCursorColumn++;
+                    UpdateCursor();
+                }
+
             }
         }
 
@@ -76,10 +124,16 @@ namespace TextEditor
 
         public void MoveCursorDown()
         {
-            if (relativeRow < this.height - 1)
+            // If there's actually text on the next line
+            if (relativeRow < textModel.Buffer.Count - 1)
             {
-                currentCursorRow++;
-                UpdateCursor();
+                // And we're not at the end of the buffer
+                if (relativeRow < this.height - 1)
+                {
+                    currentCursorRow++;
+                    currentCursorColumn = bufferLines[relativeRow].AllowedCursorColumn(relativeColumn);
+                    UpdateCursor();
+                }
             }
         }
 
@@ -95,12 +149,14 @@ namespace TextEditor
             UpdateCursor();
         }
 
-        protected int relativeRow { get { return currentCursorRow - rootPosition.Row; } }
+        public void MoveCursorTo(int column, int row)
+        {
+            currentCursorColumn = column;
+            currentCursorRow = row;
 
-        protected int relativeColumn { get { return currentCursorColumn - rootPosition.Column; } }
+            UpdateCursor();
+        }
 
-        public int CurrentLineIndex { get { return relativeRow; } }
 
-        public int CurrentColumnIndex { get { return relativeColumn; } }
     }
 }
