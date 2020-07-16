@@ -54,16 +54,21 @@ namespace TextEditor
             {
                 buffer.Insert(lineIndex + 1, new StringBuilder(initialText));
             }
-            notifySubscribers(lineIndex);
+
+            do
+            {
+                notifySubscribers(lineIndex++);
+            } while (lineIndex <= buffer.Count);
         }
 
         public void RemoveLine(int lineIndex)
         {
             buffer.RemoveAt(lineIndex);
 
-            do {
+            do
+            {
                 notifySubscribers(lineIndex++);
-            } while(lineIndex <= buffer.Count);
+            } while (lineIndex <= buffer.Count);
         }
 
         public string GetLine(int lineIndex)

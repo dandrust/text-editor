@@ -7,7 +7,17 @@ x Pressing enter should start a new line
 x Backspace position 0 of lineIndex > 0 appends line to end of previous line
 x Tell editor buffer where to move cursor after multi-line backspace
 x Restrict mouse movement to say in buffered text
-- Make editor aware of current line, implement line highlighting
 
+
+Long term:
+==========
+- Scrolling
+- Word wrapping
+- Highlighting
+- Copy/paste
+- Keyboard shortcuts
+- Tab
+- Numbers pane
+- Status on the bottom
 
 

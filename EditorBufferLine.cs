@@ -7,8 +7,9 @@ namespace TextEditor
         protected int length;
         public int Length { get { return length; } }
         protected CursorPosition rootPosition;
-
         protected string text = "";
+        public int FinalColumn { get { return text.Length; } }
+
 
         public EditorBufferLine OfLength(int length)
         {
@@ -19,7 +20,7 @@ namespace TextEditor
         public EditorBufferLine WithText(string text)
         {
             this.text = text;
-            return this;   
+            return this;
         }
 
         public EditorBufferLine AtPosition(CursorPosition position)

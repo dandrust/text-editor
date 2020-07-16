@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace TextEditor
 {
@@ -118,6 +117,7 @@ namespace TextEditor
             if (relativeRow > 0)
             {
                 currentCursorRow--;
+                currentCursorColumn = bufferLines[relativeRow].AllowedCursorColumn(relativeColumn);
                 UpdateCursor();
             }
         }
@@ -149,6 +149,25 @@ namespace TextEditor
             UpdateCursor();
         }
 
+        public void MoveCursorToFinalColumn()
+        {
+            currentCursorColumn = bufferLines[relativeRow].FinalColumn;
+            UpdateCursor();
+        }
+
+        public void MoveCursorToOriginRow()
+        {
+            currentCursorRow = 0;
+            currentCursorColumn = bufferLines[relativeRow].AllowedCursorColumn(relativeColumn);
+            UpdateCursor();
+        }
+
+        public void MoveCursorToFinalRow()
+        {
+            currentCursorRow = textModel.Buffer.Count - 1;
+            currentCursorColumn = bufferLines[relativeRow].AllowedCursorColumn(relativeColumn);
+        }
+
         public void MoveCursorTo(int column, int row)
         {
             currentCursorColumn = column;
@@ -156,7 +175,5 @@ namespace TextEditor
 
             UpdateCursor();
         }
-
-
     }
 }

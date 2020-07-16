@@ -144,7 +144,6 @@ namespace TextEditor
                 editor.EditorBuffer.MoveCursorLeft();
             }
         }
-
         protected void HandleEnter()
         {
             // Get editor buffer-aware line and column indicies
