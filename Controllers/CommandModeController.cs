@@ -2,15 +2,14 @@ using System;
 
 namespace TextEditor
 {
-    class CommandController
+    class CommandModeController : KeyPressController
     {
-        protected Editor editor;
-        public CommandController(Editor editor)
+        public CommandModeController(Editor editor) : base (editor)
         {
             this.editor = editor;
         }
 
-        public bool Process(ConsoleKeyInfo keyPress)
+        public override bool Process(ConsoleKeyInfo keyPress)
         {
             if (keyPress.Key == ConsoleKey.Q)
             {
@@ -19,16 +18,9 @@ namespace TextEditor
             else if (EscapeKey(keyPress))
             {
                 editor.ToggleMode();
-            };
-
-            
+            }
 
             return true;
-        }
-
-        protected bool EscapeKey(ConsoleKeyInfo keyPress)
-        {
-            return keyPress.Key == ConsoleKey.Escape;
         }
     }
 }

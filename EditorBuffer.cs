@@ -1,42 +1,22 @@
-using System;
 using System.Collections.Generic;
 
 namespace TextEditor
 {
-    class EditorBuffer
+    class EditorBuffer : OutputBuffer
     {
-        protected int height;
-        protected int width;
-        protected CursorPosition rootPosition;
-        protected int currentCursorRow;
-        protected int currentCursorColumn;
-        protected int relativeRow { get { return currentCursorRow - rootPosition.Row; } }
-        protected int relativeColumn { get { return currentCursorColumn - rootPosition.Column; } }
-        protected ColorConfiguration colorConfiguration;
+        public int CurrentLineIndex { get { return cursor.Row; } }
+        public int CurrentColumnIndex { get { return cursor.Column; } }
+        // Use CursorPosition to eliminate need for CurrentLineIndex and  CurrentColumnIndex.
+        // Consider returning a named tuple instead (to fix naming  of line/row)
+        public CursorPosition CursorPosition { get { return new CursorPosition(cursor.Column, cursor.Row); } }
+
+        // underlying  models   
         protected List<EditorBufferLine> bufferLines = new List<EditorBufferLine>();
-        public int CurrentLineIndex { get { return relativeRow; } }
-        public int CurrentColumnIndex { get { return relativeColumn; } }
         protected TextBuffer textModel;
+        protected Cursor cursor;
 
-        public EditorBuffer(int height, int width)
-        {
-            this.height = height;
-            this.width = width;
-        }
 
-        public EditorBuffer AtPosition(CursorPosition position)
-        {
-            rootPosition = position;
-            return this;
-        }
-
-        public EditorBuffer WithColorConfiguration(ColorConfiguration configuration)
-        {
-            colorConfiguration = configuration;
-            return this;
-        }
-
-        public EditorBuffer WithModel(TextBuffer textBuffer)
+        public void SetModel(TextBuffer textBuffer)
         {
             textModel = textBuffer;
 
@@ -50,10 +30,11 @@ namespace TextEditor
                     textBuffer.GetLine(i) :
                     "";
 
-                EditorBufferLine bufferLine = new EditorBufferLine()
-                    .WithText(text)
-                    .OfLength(width)
-                    .AtPosition(new CursorPosition(0, i + 1));
+                EditorBufferLine bufferLine = new EditorBufferLine();
+                bufferLine.SetContent(text);
+                bufferLine.SetDimensions(1, width);
+                bufferLine.SetColorConfiguration(colorConfiguration);
+                bufferLine.SetPosition(new CursorPosition(0, i + 1));
 
                 // Add the new buffer line to the line subscription list to get updates
                 // The observer pattern!
@@ -67,21 +48,11 @@ namespace TextEditor
             {
                 line.Paint();
             }
-
-            return this;
         }
 
         public void Start()
         {
-            currentCursorRow = rootPosition.Row;
-            currentCursorColumn = rootPosition.Column;
-
-            UpdateCursor();
-        }
-
-        public void UpdateCursor()
-        {
-            Console.SetCursorPosition(currentCursorColumn, currentCursorRow);
+            cursor = new Cursor(rootPosition);
         }
 
         public void AdvanceCursor()
@@ -91,22 +62,20 @@ namespace TextEditor
 
         public void MoveCursorLeft()
         {
-            if (relativeColumn > 0)
+            if (cursor.Column > 0)
             {
-                currentCursorColumn--;
-                UpdateCursor();
+                cursor.MoveLeft();
             }
         }
 
         public void MoveCursorRight()
         {
             // Only allow the cursor to move to the last editable position
-            if (relativeColumn < textModel.GetLine(relativeRow).Length)
+            if (cursor.Column < textModel.GetLine(cursor.Row).Length)
             {
-                if (relativeColumn < this.width)
+                if (cursor.Column < this.width)
                 {
-                    currentCursorColumn++;
-                    UpdateCursor();
+                    cursor.MoveRight();
                 }
 
             }
@@ -114,27 +83,40 @@ namespace TextEditor
 
         public void MoveCursorUp()
         {
-            if (relativeRow > 0)
+            if (cursor.Row > 0)
             {
-                currentCursorRow--;
-                currentCursorColumn = bufferLines[relativeRow].AllowedCursorColumn(relativeColumn);
-                UpdateCursor();
+                cursor.MoveUp(getColumnForMoveUp());
             }
         }
 
         public void MoveCursorDown()
         {
             // If there's actually text on the next line
-            if (relativeRow < textModel.Buffer.Count - 1)
+            if (cursor.Row < textModel.Buffer.Count - 1)
             {
                 // And we're not at the end of the buffer
-                if (relativeRow < this.height - 1)
+                if (cursor.Row < this.height - 1)
                 {
-                    currentCursorRow++;
-                    currentCursorColumn = bufferLines[relativeRow].AllowedCursorColumn(relativeColumn);
-                    UpdateCursor();
+                    cursor.MoveDown(getColumnForMoveDown());
                 }
             }
+        }
+
+        protected int getColumnForMoveUp()
+        {
+            int row = cursor.Row < 1 ? 0 : cursor.Row - 1;
+            return getColumnForVerticalMove(row);
+        }
+
+        protected int getColumnForMoveDown()
+        {
+            int row = cursor.Row < bufferLines.Count ? cursor.Row + 1 : bufferLines.Count;
+            return getColumnForVerticalMove(row);
+        }
+
+        protected int getColumnForVerticalMove(int row)
+        {
+            return bufferLines[row].AllowedCursorColumn(cursor.Column);
         }
 
         public void NewLine()
@@ -145,35 +127,38 @@ namespace TextEditor
 
         public void MoveCursorToOriginColumn()
         {
-            currentCursorColumn = rootPosition.Column;
-            UpdateCursor();
+            cursor.MoveToOriginColumn();
         }
 
         public void MoveCursorToFinalColumn()
         {
-            currentCursorColumn = bufferLines[relativeRow].FinalColumn;
-            UpdateCursor();
+            MoveCursorToColumn(bufferLines[cursor.Row].FinalColumn);
         }
 
         public void MoveCursorToOriginRow()
         {
-            currentCursorRow = 0;
-            currentCursorColumn = bufferLines[relativeRow].AllowedCursorColumn(relativeColumn);
-            UpdateCursor();
+            cursor.MoveToOriginRow(getColumnForMoveUp());
         }
 
         public void MoveCursorToFinalRow()
         {
-            currentCursorRow = textModel.Buffer.Count - 1;
-            currentCursorColumn = bufferLines[relativeRow].AllowedCursorColumn(relativeColumn);
+            MoveCursorToRow(textModel.Buffer.Count - 1);
         }
 
+        protected void MoveCursorToRow(int row)
+        {
+            cursor.MoveToPosition(getColumnForVerticalMove(row), row);
+        }
+
+        protected void MoveCursorToColumn(int column)
+        {
+            cursor.MoveToColumn(column);
+        }
+
+        // Can we get this to be protected?
         public void MoveCursorTo(int column, int row)
         {
-            currentCursorColumn = column;
-            currentCursorRow = row;
-
-            UpdateCursor();
+            cursor.MoveToPosition(column, row);
         }
     }
 }

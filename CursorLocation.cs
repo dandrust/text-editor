@@ -17,8 +17,15 @@ namespace TextEditor
 
         public void Restore()
         {
-            Console.CursorLeft = column;
-            Console.CursorTop = row;
+            Console.SetCursorPosition(column, row);
+        }
+
+        public void Restore(int columnDelta, int rowDelta)
+        {
+            Console.SetCursorPosition(
+                column + columnDelta,
+                row + rowDelta
+            );
         }
 
     }

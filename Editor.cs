@@ -4,13 +4,14 @@ namespace TextEditor
 {
     class Editor
     {
-        protected StatusBuffer titleBar;
-        protected StatusBuffer statusBar;
+        protected SimpleOutputBuffer titleBar;
+        protected ModeStatusField statusBar;
         protected EditorBuffer editorBuffer;
         public EditorBuffer EditorBuffer { get { return editorBuffer; } }
         protected TextBuffer textBuffer;
         public TextBuffer TextBuffer { get { return textBuffer; } }
-        public EditorMode Mode { get; set; } = EditorMode.Edit;
+        protected EditorMode mode = EditorMode.Edit;
+        public EditorMode Mode { get { return mode; } }
         public enum EditorMode
         {
             Command,
@@ -19,6 +20,8 @@ namespace TextEditor
         }
         protected CommandBuffer commandBuffer = null;
 
+        public event EventHandler<EditorModeEventArgs> ModeChangedEvent;
+
         public Editor()
         {
             Console.Clear();
@@ -26,34 +29,34 @@ namespace TextEditor
             ColorConfiguration editorColorConfiguration = GetEditorColorConfiguration();
             ColorConfiguration systemColorConfiguration = GetSystemColorConfiguration();
 
-            titleBar = new StatusBuffer(1, Console.BufferWidth);
-            titleBar
-                .AtPosition(new CursorPosition(0, 0))
-                .WithContent("Welcome to Text Editor")
-                .WithColorConfiguration(systemColorConfiguration)
-                .paint();
+            titleBar = new SimpleOutputBuffer();
+            titleBar.SetDimensions(1, Console.BufferWidth);
+            titleBar.SetPosition(new CursorPosition(0, 0));
+            titleBar.SetColorConfiguration(systemColorConfiguration);
+            titleBar.SetContent("Welcome to Text Editor");
+            titleBar.Paint();
 
-            statusBar = new StatusBuffer(1, Console.BufferWidth);
-            statusBar
-                .AtPosition(new CursorPosition(0, Console.BufferHeight - 1)) // Last row
-                .WithContent("STATUS: Ready")
-                .WithColorConfiguration(systemColorConfiguration)
-                .paint();
+            // statusBar = new FieldOutputBuffer();
+            statusBar = new ModeStatusField();
+            statusBar.SetDimensions(1, Console.BufferWidth);
+            statusBar.SetPosition(new CursorPosition(0, Console.BufferHeight - 1)); // Last row
+            statusBar.SetColorConfiguration(systemColorConfiguration);
+            // statusBar.AddField("One");
+            // statusBar.AddField("Two");
+            // statusBar.AddField("Three");
+            statusBar.SetContent("EDIT");
+            statusBar.Paint();
+
+            ModeChangedEvent += statusBar.HandleModeChangedEvent;
 
             textBuffer = new TextBuffer();
-            textBuffer.registerSubscriber(statusBar);
 
-            editorBuffer = new EditorBuffer(Console.BufferHeight - 2, Console.BufferWidth);
-            editorBuffer
-                .AtPosition(new CursorPosition(0, 1))
-                .WithColorConfiguration(editorColorConfiguration)
-                .WithModel(textBuffer)
-                .Start();
-
-
-
-
-
+            editorBuffer = new EditorBuffer();
+            editorBuffer.SetDimensions(Console.BufferHeight - 2, Console.BufferWidth);
+            editorBuffer.SetPosition(new CursorPosition(0, 1));
+            editorBuffer.SetColorConfiguration(editorColorConfiguration);
+            editorBuffer.SetModel(textBuffer);
+            editorBuffer.Start();
         }
 
         protected ColorConfiguration GetEditorColorConfiguration()
@@ -82,29 +85,24 @@ namespace TextEditor
         {
             if (InEditMode())
             {
-                EnterCommandMode();
+                changeMode(Editor.EditorMode.Command);
             }
-            else
+            else if (InCommandMode())
             {
-                LeaveCommandMode();
+                changeMode(Editor.EditorMode.Edit);
             }
         }
 
-        public void EnterCommandMode()
+        protected void changeMode(Editor.EditorMode mode)
         {
-            Mode = EditorMode.Command;
-            commandBuffer = new CommandBuffer;
+            this.mode = mode;
+            raiseModeChangedEvent(mode);
         }
 
-        public void LeaveCommandMode()
+        protected void raiseModeChangedEvent(Editor.EditorMode mode)
         {
-            Mode = EditorMode.Edit;
-            commandBuffer = null;
-        }
-
-        public void EnterHighlightMode()
-        {
-            Mode = EditorMode.Highlight;
+            EventHandler<EditorModeEventArgs> raiseEvent = ModeChangedEvent;
+            if (raiseEvent != null) raiseEvent(this, new EditorModeEventArgs(mode));
         }
 
         public bool InCommandMode()
@@ -117,12 +115,8 @@ namespace TextEditor
             return Mode == EditorMode.Edit;
         }
 
-        public bool InHighlightMode()
+        public void DispatchCommand()
         {
-            return Mode = EditorMode.Highlight;
-        }
-
-        public void DispatchCommand() {
             string command = commandBuffer.ToString();
 
             switch (command)
@@ -158,7 +152,7 @@ namespace TextEditor
                     break;
                 case "highlight":
                 case "h":
-                    EnterHighlightMode();
+                    // EnterHighlightMode();
                     break;
                 default:
                     // Send a timeoutable message to status bar "Invalid Command"

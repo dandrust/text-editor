@@ -9,12 +9,7 @@ namespace TextEditor
         protected CursorPosition position;
         protected string content = "";
         protected ColorConfiguration colorConfiguration;
-
-        public StatusBuffer(int height, int width)
-        {
-            this.height = height;
-            this.width = width;
-        }
+        
 
         // Fluent Interface
         public StatusBuffer AtPosition(CursorPosition position)

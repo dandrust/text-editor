@@ -2,47 +2,21 @@ using System;
 
 namespace TextEditor
 {
-    class EditorBufferLine : IUpdatable
+    class EditorBufferLine : SimpleOutputBuffer, IUpdatable
     {
-        protected int length;
-        public int Length { get { return length; } }
-        protected CursorPosition rootPosition;
-        protected string text = "";
-        public int FinalColumn { get { return text.Length; } }
 
+        public int Length { get { return width; } }
 
-        public EditorBufferLine OfLength(int length)
-        {
-            this.length = length;
-            return this;
-        }
-
-        public EditorBufferLine WithText(string text)
-        {
-            this.text = text;
-            return this;
-        }
-
-        public EditorBufferLine AtPosition(CursorPosition position)
-        {
-            this.rootPosition = position;
-            return this;
-        }
+        public int FinalColumn { get { return content.Length; } }
 
         public int AllowedCursorColumn(int currentColumn)
         {
-            return currentColumn < text.Length ? currentColumn : text.Length;
+            return currentColumn < content.Length ? currentColumn : content.Length;
         }
 
-        public void Paint()
+        public void Update(string content)
         {
-            Console.SetCursorPosition(rootPosition.Column, rootPosition.Row);
-            Console.Write(text.PadRight(length));
-        }
-
-        public void Update(string text)
-        {
-            this.text = text;
+            this.content = content;
             Paint();
         }
     }
